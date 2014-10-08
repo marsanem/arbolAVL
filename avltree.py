@@ -6,8 +6,7 @@ def random_data_generator (max_r):
         yield random.randint(0, max_r)
 
 class Node():
-    def __init__(self, key, text):
-        self.key = key
+    def __init__(self, text):
         self.parent = None
         self.leftChild = None
         self.rightChild = None
@@ -15,7 +14,7 @@ class Node():
         self.text = text
     
     def __str__(self):
-        return str(self.key) + "(" + str(self.height) + ")"
+        return self.text+ "(" + str(self.height) + ")"
     
     def is_leaf(self):
         return (self.height == 0)
@@ -38,20 +37,16 @@ class AVLTree():
         self.rootNode = None
         self.elements_count = 0
         self.rebalance_count = 0
-        if len(args) == 1:
-            for i in args[0]:
-                self.insert (i,i)
-        elif len(args) == 2:
-            for i, j in zip(args[0], args[1]):
-                self.insert (i,j)
 
     def height(self):
+        print('height')
         if self.rootNode:
             return self.rootNode.height
         else:
             return 0
         
     def rebalance (self, node_to_rebalance):
+        print('rebalance')
         self.rebalance_count += 1
         A = node_to_rebalance 
         F = A.parent #allowed to be NULL
@@ -152,44 +147,9 @@ class AVLTree():
                    C.parent = F
                 self.recompute_heights (A)
                 self.recompute_heights (B)
-                
-    def sanity_check (self, *args):
-        if len(args) == 0:
-            node = self.rootNode
-        else:
-            node = args[0]
-        if (node  is None) or (node.is_leaf() and node.parent is None ):
-            # trival - no sanity check needed, as either the tree is empty or there is only one node in the tree     
-            pass    
-        else:
-            if node.height != node.max_children_height() + 1:
-                raise Exception ("Invalid height for node " + str(node) + ": " + str(node.height) + " instead of " + str(node.max_children_height() + 1) + "!" )
-                
-            balFactor = node.balance()
-            #Test the balance factor
-            if not (balFactor >= -1 and balFactor <= 1):
-                raise Exception ("Balance factor for node " + str(node) + " is " + str(balFactor) + "!")
-            #Make sure we have no circular references
-            if not (node.leftChild != node):
-                raise Exception ("Circular reference for node " + str(node) + ": node.leftChild is node!")
-            if not (node.rightChild != node):
-                raise Exception ("Circular reference for node " + str(node) + ": node.rightChild is node!")
-            
-            if ( node.leftChild ): 
-                if not (node.leftChild.parent == node):
-                    raise Exception ("Left child of node " + str(node) + " doesn't know who his father is!")
-                if not (node.leftChild.key <=  node.key):
-                    raise Exception ("Key of left child of node " + str(node) + " is greater than key of his parent!")
-                self.sanity_check(node.leftChild)
-            
-            if ( node.rightChild ): 
-                if not (node.rightChild.parent == node):
-                    raise Exception ("Right child of node " + str(node) + " doesn't know who his father is!")
-                if not (node.rightChild.key >=  node.key):
-                    raise Exception ("Key of right child of node " + str(node) + " is less than key of his parent!")
-                self.sanity_check(node.rightChild)
             
     def recompute_heights (self, start_from_node):
+        print('recompute_heights')
         changed = True
         node = start_from_node
         while node and changed:
@@ -198,9 +158,10 @@ class AVLTree():
             changed = node.height != old_height
             node = node.parent
        
-    def add_as_child (self, parent_node, child_node):
+    def add_as_child (self, parent_node, child_node,side):
+        print('add_as_child')
         node_to_rebalance = None
-        if child_node.key < parent_node.key:
+        if side == 0:
             if not parent_node.leftChild:
                 parent_node.leftChild = child_node
                 child_node.parent = parent_node
@@ -213,7 +174,7 @@ class AVLTree():
                             break #we need the one that is furthest from the root
                         node = node.parent     
             else:
-                self.add_as_child(parent_node.leftChild, child_node)
+                self.add_as_child(parent_node.leftChild, child_node,0)
         else:
             if not parent_node.rightChild:
                 parent_node.rightChild = child_node
@@ -227,21 +188,53 @@ class AVLTree():
                             break #we need the one that is furthest from the root
                         node = node.parent       
             else:
-                self.add_as_child(parent_node.rightChild, child_node)
+                self.add_as_child(parent_node.rightChild, child_node,1)
         
         if node_to_rebalance:
             self.rebalance (node_to_rebalance)
+
+    def add_as_child2(self,text, parent_node,side):
+        child_node = Node (text)
+        print('add_as_child')
+        node_to_rebalance = None
+        if side == 0:
+            if not parent_node.leftChild:
+                parent_node.leftChild = child_node
+                child_node.parent = parent_node
+                if parent_node.height == 0:
+                    node = parent_node
+                    while node:
+                        node.height = node.max_children_height() + 1
+                        if not node.balance () in [-1, 0, 1]:
+                            node_to_rebalance = node
+                            break #we need the one that is furthest from the root
+                        node = node.parent
+        else:
+            if not parent_node.rightChild:
+                parent_node.rightChild = child_node
+                child_node.parent = parent_node
+                if parent_node.height == 0:
+                    node = parent_node
+                    while node:
+                        node.height = node.max_children_height() + 1
+                        if not node.balance () in [-1, 0, 1]:
+                            node_to_rebalance = node
+                            break #we need the one that is furthest from the root
+                        node = node.parent
     
-    def insert (self, key, text):
-        new_node = Node (key, text)
+        if node_to_rebalance:
+            self.rebalance (node_to_rebalance)
+
+    def insert (self, text, side):
+        new_node = Node (text)
         if not self.rootNode:
             self.rootNode = new_node
         else:
-            if not self.find(key):
-                self.elements_count += 1
-                self.add_as_child (self.rootNode, new_node)
+            self.elements_count += 1
+            self.add_as_child (self.rootNode, new_node, side)
       
     def find_biggest(self, start_node):
+        print('find_biggest')
         node = start_node
         while node.rightChild:
             node = node.rightChild
@@ -253,28 +246,10 @@ class AVLTree():
             node = node.leftChild
         return node
      
-    def inorder_non_recursive (self):
-        node = self.rootNode
-        retlst = []
-        while node.leftChild:
-            node = node.leftChild
-        while (node):
-            retlst += [node.key]
-            if (node.rightChild):
-                node = node.rightChild
-                while node.leftChild:
-                    node = node.leftChild
-            else:
-                while ((node.parent)  and (node == node.parent.rightChild)):
-                    node = node.parent
-                node = node.parent
-        return retlst
- 
     def preorder(self, node, retlst = None):
         if retlst is None:
             retlst = []
-        #retlst += [node.text]
-        retlst += [node.key]
+        retlst += [node.text]
         if node.leftChild:
             retlst = self.preorder(node.leftChild, retlst) 
         if node.rightChild:
@@ -286,7 +261,6 @@ class AVLTree():
             retlst = [] 
         if node.leftChild:
             retlst = self.inorder(node.leftChild, retlst)
-        #retlst += [node.key]
         retlst += [node.text]
         if node.rightChild:
             retlst = self.inorder(node.rightChild, retlst)
@@ -299,7 +273,7 @@ class AVLTree():
             retlst = self.postorder(node.leftChild, retlst) 
         if node.rightChild:
             retlst = self.postorder(node.rightChild, retlst)
-        retlst += [node.key]
+        retlst += [node.text]
         return retlst  
     
     def as_list (self, pre_in_post):
@@ -311,13 +285,13 @@ class AVLTree():
             return self.inorder (self.rootNode)
         elif pre_in_post == 2:
             return self.postorder (self.rootNode)
-        elif pre_in_post == 3:
-            return self.inorder_non_recursive()      
           
     def find(self, key):
+        print('find')
         return self.find_in_subtree (self.rootNode, key )
     
     def find_in_subtree (self,  node, key):
+        print('find_in_subtree')
         if node is None:
             return None  # key not found
         if key < node.key:
@@ -328,6 +302,7 @@ class AVLTree():
             return node
     
     def remove (self, key):
+        print('remove')
         # first find
         node = self.find(key)
         
@@ -353,6 +328,7 @@ class AVLTree():
                 self.swap_with_successor_and_remove (node)
             
     def remove_leaf (self, node):
+        print('remove_leaf')
         parent = node.parent
         if (parent):
             if parent.leftChild == node:
@@ -373,6 +349,7 @@ class AVLTree():
         
         
     def remove_branch (self, node):
+        print('remove_branch')
         parent = node.parent
         if (parent):
             if parent.leftChild == node:
@@ -395,6 +372,7 @@ class AVLTree():
             node = node.parent
         
     def swap_with_successor_and_remove (self, node):
+        print('swap_succesor_and_remove')
         successor = self.find_smallest(node.rightChild)
         self.swap_nodes (node, successor)
         assert (node.leftChild is None)
@@ -404,6 +382,7 @@ class AVLTree():
             self.remove_branch (node)
             
     def swap_nodes (self, node1, node2):
+        print('swap_nodes')
         assert (node1.height > node2.height)
         parent1 = node1.parent
         leftChild1 = node1.leftChild
@@ -486,13 +465,10 @@ class ImportText():
         resultTree = AVLTree();
         for i in listText:
             if resultTree.rootNode == None:
-                #insert the root node with key = lengthList
-                resultTree.insert(lengthList,i)
+                resultTree.insert(i,0)
                 print(lengthList)
                 print(resultTree.elements_count)
             else:
-                #insert the node with key comparing to all the elements of the list
-                #asking if it is more important than the previous nodes
                 resultTree.rootNode.text
                 currentNode = resultTree.rootNode
                 done = True
@@ -500,48 +476,28 @@ class ImportText():
                     moreImportant = (input(i+" is more important than "+currentNode.text+" y/n "))
                     if moreImportant == "y":
                         if(currentNode.rightChild == None):
-                            #resultNode = resultTree.find(currentNode.key+1)
-                                #if resultNode == None:
-                            resultTree.insert(currentNode.key+1,i)
+                            resultTree.add_as_child2(i,currentNode,1)
                             done = False
-                                    #else:
-                                    #print("duplicate")
-                                    #resultNode.text,i = i,resultNode.text
-                                    #currentNode = resultNode
                         else:
                             currentNode = currentNode.rightChild
                     else:
                         if(currentNode.leftChild == None):
-                            resultTree.insert(currentNode.key-1,i)
+                            resultTree.add_as_child2(i,currentNode,0)
                             done = False
                         else:
                             currentNode = currentNode.leftChild
                 print(resultTree.as_list(1))
                 print(resultTree.rebalance_count)
-                print(resultTree.rootNode.key)
+                print (resultTree.out())
         return resultTree
-
 
 if __name__ == "__main__":
     """check empty tree creation"""
     g = ImportText()
-    #print(listText)
-    listText = g.makeList('list.txt')
-    lengthList = len(listText)
-    listTextIndex = list(range(0,lengthList))
-    listTextIndexReverse = listTextIndex.reverse()
-    #listTextIndexReverse = listTextIndex
-    print(listTextIndex)
-    treeList = AVLTree (listTextIndex, listText)
-    print (treeList.as_list(1))
-    treeList.remove(3)
-    print (treeList.as_list(1))
-    treeList.insert(3,'Kiwi')
-    print (treeList.as_list(1))
-    
 
     a = g.convertListToTree('list.txt')
-    print (a.as_list(1))
+    #print (a.as_list(1))
+    #print (a.out())
 
 
 
