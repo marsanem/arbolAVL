@@ -1,5 +1,8 @@
 import random, math
-
+from datetime import datetime
+from trello import TrelloClient
+import os
+import datetime
 
 def random_data_generator (max_r):
     for i in range(max_r):
@@ -491,13 +494,65 @@ class ImportText():
                 print (resultTree.out())
         return resultTree
 
+class connectionJASON():
+    
+    def setUp(self):
+        self._trello = TrelloClient(api_key='f8fd231446c1fd27f49e0d8f933252f3',
+                                api_secret='338b8eef2cc489ce5cfc9f2252c73f5cf51b44a41cc6cb790be20feb9ed19f2d',
+                                token='8004f00bc94627ac6eb98333492a76315821ed06e9d04eec4b6480d1f575758b',
+                                token_secret='a528cdd05a0dd7314f45995fdf457c45')
+                                
+    def getCards(self):
+        boards = [board for board in self._trello.list_boards() if 'Proy Industria' in str(board.name) ]
+        board = boards[0]
+        cards = board.get_cards()
+        return cards
+
+
+    def arrangeCards(self,cards):
+        resultTree = AVLTree();
+        for i in cards:
+            if resultTree.rootNode == None:
+                resultTree.insert(str(i),0)
+            else:
+                resultTree.rootNode.text
+                currentNode = resultTree.rootNode
+                done = True
+                while(done):
+                    moreImportant = (input(str(i)+" is more important than "+currentNode.text+" y/n "))
+                    if moreImportant == "y":
+                        if(currentNode.rightChild == None):
+                            resultTree.add_as_child2(str(i),currentNode,1)
+                            done = False
+                        else:
+                            currentNode = currentNode.rightChild
+                    else:
+                        if(currentNode.leftChild == None):
+                            resultTree.add_as_child2(str(i),currentNode,0)
+                            done = False
+                        else:
+                            currentNode = currentNode.leftChild
+                print(resultTree.as_list(1))
+                print(resultTree.rebalance_count)
+                print (resultTree.out())
+        return resultTree
+
+
+
+
+
 if __name__ == "__main__":
     """check empty tree creation"""
-    g = ImportText()
-
-    a = g.convertListToTree('list.txt')
+    #g = ImportText()
+    #a = g.convertListToTree('list.txt')
     #print (a.as_list(1))
     #print (a.out())
+
+    c = connectionJASON()
+    c.setUp()
+    d = c.getCards()
+    c.arrangeCards(d)
+
 
 
 
