@@ -16,7 +16,7 @@ class TrelloClientTestCase(unittest.TestCase):
                                     api_secret='338b8eef2cc489ce5cfc9f2252c73f5cf51b44a41cc6cb790be20feb9ed19f2d',token='8004f00bc94627ac6eb98333492a76315821ed06e9d04eec4b6480d1f575758b',token_secret='a528cdd05a0dd7314f45995fdf457c45')
 
     def test01_list_boards(self):
-        self.assertEquals(
+        self.assertEqual(
             len(self._trello.list_boards()),
             int(4))
 
@@ -94,12 +94,13 @@ class TrelloClientTestCase(unittest.TestCase):
 
 
     def test52_get_cards(self):
-        boards = [board for board in self._trello.list_boards() if board.name == 'Proy Industria']
+        """boards = [board for board in self._trello.list_boards() if board.name == 'Proy Industria: AVL priorización']"""
+        boards = [board for board in self._trello.list_boards() if 'Proy Industria' in str(board.name) ]
         self.assertEquals(len(boards), 1, msg="Test board not found")
 
         board = boards[0]
         cards = board.get_cards()
-        self.assertEqual(len(cards), 3, msg="Unexpected number of cards in testboard")
+        self.assertEqual(len(cards), 15, msg="Unexpected number of cards in testboard")
 
         for card in cards:
             if card.name == 'Testing from Python':
