@@ -42,14 +42,14 @@ class AVLTree():
         self.rebalance_count = 0
 
     def height(self):
-        print('height')
+        #print('height')
         if self.rootNode:
             return self.rootNode.height
         else:
             return 0
         
     def rebalance (self, node_to_rebalance):
-        print('rebalance')
+        #print('rebalance')
         self.rebalance_count += 1
         A = node_to_rebalance 
         F = A.parent #allowed to be NULL
@@ -152,7 +152,7 @@ class AVLTree():
                 self.recompute_heights (B)
             
     def recompute_heights (self, start_from_node):
-        print('recompute_heights')
+        #print('recompute_heights')
         changed = True
         node = start_from_node
         while node and changed:
@@ -162,7 +162,7 @@ class AVLTree():
             node = node.parent
        
     def add_as_child (self, parent_node, child_node,side):
-        print('add_as_child')
+        #print('add_as_child')
         node_to_rebalance = None
         if side == 0:
             if not parent_node.leftChild:
@@ -198,7 +198,7 @@ class AVLTree():
 
     def add_as_child2(self,text, parent_node,side):
         child_node = Node (text)
-        print('add_as_child')
+        #print('add_as_child')
         node_to_rebalance = None
         if side == 0:
             if not parent_node.leftChild:
@@ -237,7 +237,7 @@ class AVLTree():
             self.add_as_child (self.rootNode, new_node, side)
       
     def find_biggest(self, start_node):
-        print('find_biggest')
+        #print('find_biggest')
         node = start_node
         while node.rightChild:
             node = node.rightChild
@@ -290,11 +290,11 @@ class AVLTree():
             return self.postorder (self.rootNode)
           
     def find(self, key):
-        print('find')
+        #print('find')
         return self.find_in_subtree (self.rootNode, key )
     
     def find_in_subtree (self,  node, key):
-        print('find_in_subtree')
+        #print('find_in_subtree')
         if node is None:
             return None  # key not found
         if key < node.key:
@@ -305,7 +305,7 @@ class AVLTree():
             return node
     
     def remove (self, key):
-        print('remove')
+        #print('remove')
         # first find
         node = self.find(key)
         
@@ -331,7 +331,7 @@ class AVLTree():
                 self.swap_with_successor_and_remove (node)
             
     def remove_leaf (self, node):
-        print('remove_leaf')
+        #print('remove_leaf')
         parent = node.parent
         if (parent):
             if parent.leftChild == node:
@@ -352,7 +352,7 @@ class AVLTree():
         
         
     def remove_branch (self, node):
-        print('remove_branch')
+        #print('remove_branch')
         parent = node.parent
         if (parent):
             if parent.leftChild == node:
@@ -375,7 +375,7 @@ class AVLTree():
             node = node.parent
         
     def swap_with_successor_and_remove (self, node):
-        print('swap_succesor_and_remove')
+        #print('swap_succesor_and_remove')
         successor = self.find_smallest(node.rightChild)
         self.swap_nodes (node, successor)
         assert (node.leftChild is None)
@@ -385,7 +385,7 @@ class AVLTree():
             self.remove_branch (node)
             
     def swap_nodes (self, node1, node2):
-        print('swap_nodes')
+        #print('swap_nodes')
         assert (node1.height > node2.height)
         parent1 = node1.parent
         leftChild1 = node1.leftChild
@@ -469,8 +469,8 @@ class ImportText():
         for i in listText:
             if resultTree.rootNode == None:
                 resultTree.insert(i,0)
-                print(lengthList)
-                print(resultTree.elements_count)
+                #print(lengthList)
+                #print(resultTree.elements_count)
             else:
                 resultTree.rootNode.text
                 currentNode = resultTree.rootNode
@@ -489,9 +489,9 @@ class ImportText():
                             done = False
                         else:
                             currentNode = currentNode.leftChild
-                print(resultTree.as_list(1))
-                print(resultTree.rebalance_count)
-                print (resultTree.out())
+                #print(resultTree.as_list(1))
+                #print(resultTree.rebalance_count)
+                #print (resultTree.out())
         return resultTree
 
 class connectionJASON():
@@ -513,31 +513,35 @@ class connectionJASON():
         resultTree = AVLTree();
         for i in cards:
             if resultTree.rootNode == None:
-                resultTree.insert(str(i),0)
+                resultTree.insert(i,0)
             else:
-                resultTree.rootNode.text
+                #resultTree.rootNode.text
                 currentNode = resultTree.rootNode
                 done = True
                 while(done):
-                    moreImportant = (input(str(i)+" is more important than "+currentNode.text+" y/n "))
+                    moreImportant = (input(str(i)+" is more important than "+str(currentNode.text)+" y/n "))
                     if moreImportant == "y":
                         if(currentNode.rightChild == None):
-                            resultTree.add_as_child2(str(i),currentNode,1)
+                            resultTree.add_as_child2(i,currentNode,1)
                             done = False
                         else:
                             currentNode = currentNode.rightChild
                     else:
                         if(currentNode.leftChild == None):
-                            resultTree.add_as_child2(str(i),currentNode,0)
+                            resultTree.add_as_child2(i,currentNode,0)
                             done = False
                         else:
                             currentNode = currentNode.leftChild
                 print(resultTree.as_list(1))
-                print(resultTree.rebalance_count)
-                print (resultTree.out())
+                #print(resultTree.rebalance_count)
+                #print (resultTree.out())
         return resultTree
 
-
+    def sendCards(self,cards):
+        boards = [board for board in self._trello.list_boards() if 'Proy Industria' in str(board.name) ]
+        board = boards[0]
+        cards = board.get_cards()
+        return cards
 
 
 
